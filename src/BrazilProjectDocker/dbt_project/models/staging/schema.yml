@@ -1,0 +1,15 @@
+﻿version: 2
+
+sources:
+  - name: raw
+    schema: raw
+    tables:
+      - name: orders
+      - name: items
+      - name: payments
+      - name: reviews
+      - name: customers
+      - name: products
+      - name: sellers
+      - name: category_translation
+      - name: geolocation

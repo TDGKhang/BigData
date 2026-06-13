@@ -52,33 +52,38 @@ reviews_schema = StructType([
 
 # ==========================================
 # 2. HÀM TẠO LUỒNG KẾT NỐI VÀ LƯU XUỐNG HDFS
+# Vai trò: Kafka → HDFS (Data Lake)
+# PostgreSQL sẽ được load bởi load_to_postgres.py (Batch job)
 # ==========================================
 def create_stream(topic_name, schema, folder_name):
     print(f"-> Khoi tao luong tiep nhan cho: {topic_name}")
-    
+
     raw_df = spark.readStream \
         .format("kafka") \
         .option("kafka.bootstrap.servers", "kafka:9092") \
         .option("subscribe", topic_name) \
         .option("startingOffsets", "latest") \
+        .option("failOnDataLoss", "false") \
         .load()
-        
+
     parsed_df = raw_df.selectExpr("CAST(value AS STRING)") \
         .select(from_json(col("value"), schema).alias("data")) \
         .select("data.*")
-        
 
+    # HDFS sink only
     hdfs_path = f"hdfs://namenode:8020/user/hadoop/olist_datalake/{folder_name}/"
     chk_path = f"hdfs://namenode:8020/user/hadoop/olist_checkpoints/{folder_name}/"
-    
-    query = parsed_df.writeStream \
+
+    hdfs_query = parsed_df.writeStream \
         .outputMode("append") \
         .format("parquet") \
         .option("path", hdfs_path) \
         .option("checkpointLocation", chk_path) \
+        .trigger(processingTime='10 seconds') \
         .start()
-        
-    return query
+
+    print(f"✅ Stream started for {topic_name} → HDFS {hdfs_path}")
+    return hdfs_query
 
 # ==========================================
 # 3. CHẠY ĐỒNG THỜI 4 LUỒNG DỮ LIỆU
@@ -88,5 +93,5 @@ q2 = create_stream("live_items", items_schema, "items")
 q3 = create_stream("live_payments", payments_schema, "payments")
 q4 = create_stream("live_reviews", reviews_schema, "reviews")
 
-print("Hoan tat. Spark dang cho du lieu tu Kafka...")
+print("Hoan tat. Spark dang cho du lieu tu Kafka va luu vao HDFS...")
 spark.streams.awaitAnyTermination()

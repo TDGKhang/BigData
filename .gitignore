@@ -1,0 +1,16 @@
+# dbt
+dbt_project/logs/
+dbt_project/target/
+
+# Grafana
+grafana.db
+
+# Logs
+*.log
+spark_logs.txt
+
+# Archives
+*.zip
+
+# User config
+.user.yml

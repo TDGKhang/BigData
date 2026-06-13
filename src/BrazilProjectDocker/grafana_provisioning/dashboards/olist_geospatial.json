@@ -1,0 +1,548 @@
+{
+  "apiVersion": "dashboard.grafana.app/v2",
+  "kind": "Dashboard",
+  "metadata": {
+    "name": "adqcjkj",
+    "namespace": "default",
+    "uid": "60b1616a-4b86-4413-99ec-4c9e731e6649",
+    "resourceVersion": "1781326127612994",
+    "generation": 1,
+    "creationTimestamp": "2026-06-13T04:48:47Z",
+    "labels": {
+      "grafana.app/deprecatedInternalID": "3008957479251968"
+    },
+    "annotations": {
+      "grafana.app/createdBy": "user:afoz6xk7vysjke",
+      "grafana.app/folder": "",
+      "grafana.app/saved-from-ui": "Grafana v13.0.1+security-01 (9bbe672d)"
+    }
+  },
+  "spec": {
+    "annotations": [
+      {
+        "kind": "AnnotationQuery",
+        "spec": {
+          "query": {
+            "kind": "DataQuery",
+            "group": "grafana",
+            "version": "v0",
+            "datasource": {
+              "name": "grafana"
+            },
+            "spec": {}
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "",
+          "name": "Annotations & Alerts",
+          "builtIn": true
+        }
+      }
+    ],
+    "cursorSync": "Off",
+    "editable": true,
+    "elements": {
+      "panel-1": {
+        "kind": "Panel",
+        "spec": {
+          "id": 1,
+          "title": "Total Customers by State",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "postgres",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "PostgreSQL"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT \n    c.customer_state as state,\n    AVG(g.geolocation_lat) as latitude,\n    AVG(g.geolocation_lng) as longitude,\n    COUNT(DISTINCT c.customer_unique_id) as metric\nFROM public.dim_customers c\nJOIN public.dim_geolocation g ON c.customer_zip_code_prefix = g.geolocation_zip_code_prefix\nLEFT JOIN public.fact_order_items f ON f.customer_id = c.customer_id\nLEFT JOIN public.dim_products p ON f.product_id = p.product_id\nWHERE \n    ('All' IN (${product_category:sqlstring}) OR coalesce(p.product_category_name_english, p.product_category_name, 'Unknown') IN (${product_category:sqlstring}))\n    AND ('All' IN (${state:sqlstring}) OR c.customer_state IN (${state:sqlstring}))\nGROUP BY c.customer_state;",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "geomap",
+            "version": "13.0.1+security-01",
+            "spec": {
+              "options": {
+                "basemap": {
+                  "config": {
+                    "server": "streets",
+                    "showLabels": true,
+                    "theme": "auto"
+                  },
+                  "name": "Layer 0",
+                  "noRepeat": false,
+                  "opacity": 1,
+                  "type": "osm-standard"
+                },
+                "controls": {
+                  "mouseWheelZoom": true,
+                  "showAttribution": true,
+                  "showDebug": false,
+                  "showMeasure": false,
+                  "showScale": false,
+                  "showZoom": true
+                },
+                "layers": [
+                  {
+                    "config": {
+                      "showLegend": false,
+                      "style": {
+                        "color": {
+                          "field": "state",
+                          "fixed": "dark-green"
+                        },
+                        "opacity": 0.8,
+                        "rotation": {
+                          "fixed": 0,
+                          "max": 360,
+                          "min": -360,
+                          "mode": "mod"
+                        },
+                        "size": {
+                          "field": "metric",
+                          "fixed": 5,
+                          "max": 40,
+                          "min": 2
+                        },
+                        "symbol": {
+                          "fixed": "img/icons/marker/circle.svg",
+                          "mode": "fixed"
+                        },
+                        "symbolAlign": {
+                          "horizontal": "center",
+                          "vertical": "center"
+                        },
+                        "text": {
+                          "field": "",
+                          "fixed": "",
+                          "mode": "field"
+                        },
+                        "textConfig": {
+                          "fontSize": 12,
+                          "offsetX": 0,
+                          "offsetY": 0,
+                          "textAlign": "center",
+                          "textBaseline": "middle"
+                        }
+                      }
+                    },
+                    "filterData": {
+                      "id": "byRefId",
+                      "options": "A"
+                    },
+                    "location": {
+                      "latitude": "latitude",
+                      "longitude": "longitude",
+                      "mode": "coords"
+                    },
+                    "name": "Layer 1",
+                    "tooltip": true,
+                    "type": "markers"
+                  }
+                ],
+                "tooltip": {
+                  "mode": "details"
+                },
+                "view": {
+                  "allLayers": false,
+                  "dashboardVariable": false,
+                  "id": "coords",
+                  "lastOnly": false,
+                  "lat": -14.012289,
+                  "layer": "Layer 1",
+                  "lon": -51.854677,
+                  "noRepeat": false,
+                  "shared": false,
+                  "zoom": 3.95
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "custom": {
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    }
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-2": {
+        "kind": "Panel",
+        "spec": {
+          "id": 2,
+          "title": "Total Revenue by State",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "postgres",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "PostgreSQL"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT \n    c.customer_state as state,\n    AVG(g.geolocation_lat) as latitude,\n    AVG(g.geolocation_lng) as longitude,\n    SUM(f.price) as metric\nFROM public.fact_order_items f\nJOIN public.dim_customers c ON f.customer_id = c.customer_id\nJOIN public.dim_geolocation g ON c.customer_zip_code_prefix = g.geolocation_zip_code_prefix\nJOIN public.dim_products p ON f.product_id = p.product_id\nWHERE \n    ('All' IN (${product_category:sqlstring}) OR coalesce(p.product_category_name_english, p.product_category_name, 'Unknown') IN (${product_category:sqlstring}))\n    AND ('All' IN (${state:sqlstring}) OR c.customer_state IN (${state:sqlstring}))\nGROUP BY c.customer_state;"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "geomap",
+            "version": "13.0.1+security-01",
+            "spec": {
+              "options": {
+                "basemap": {
+                  "config": {},
+                  "name": "Layer 0",
+                  "noRepeat": false,
+                  "opacity": 1,
+                  "type": "osm-standard"
+                },
+                "controls": {
+                  "mouseWheelZoom": true,
+                  "showAttribution": true,
+                  "showDebug": false,
+                  "showMeasure": false,
+                  "showScale": false,
+                  "showZoom": true
+                },
+                "layers": [
+                  {
+                    "config": {
+                      "showLegend": false,
+                      "style": {
+                        "color": {
+                          "field": "metric",
+                          "fixed": "rgba(220, 220, 220, 0.6)"
+                        },
+                        "opacity": 0.7,
+                        "size": {
+                          "field": "metric",
+                          "fixed": 5,
+                          "max": 40,
+                          "min": 5
+                        },
+                        "text": {
+                          "field": "metric",
+                          "fixed": "",
+                          "mode": "fixed"
+                        }
+                      }
+                    },
+                    "filterData": {
+                      "id": "byRefId",
+                      "options": "A"
+                    },
+                    "layer-tooltip": false,
+                    "location": {
+                      "latitude": "latitude",
+                      "latitudeField": "latitude",
+                      "longitude": "longitude",
+                      "longitudeField": "longitude",
+                      "mode": "coords"
+                    },
+                    "name": "Revenue by State",
+                    "type": "markers"
+                  },
+                  {
+                    "config": {
+                      "showLegend": false,
+                      "style": {
+                        "color": {
+                          "field": "metric",
+                          "fixed": "dark-green"
+                        },
+                        "opacity": 0.4,
+                        "rotation": {
+                          "fixed": 0,
+                          "max": 360,
+                          "min": -360,
+                          "mode": "mod"
+                        },
+                        "size": {
+                          "fixed": 5,
+                          "max": 15,
+                          "min": 2
+                        },
+                        "symbol": {
+                          "fixed": "img/icons/marker/circle.svg",
+                          "mode": "fixed"
+                        },
+                        "symbolAlign": {
+                          "horizontal": "center",
+                          "vertical": "center"
+                        },
+                        "text": {
+                          "field": "state",
+                          "fixed": "",
+                          "mode": "fixed"
+                        },
+                        "textConfig": {
+                          "fontSize": 12,
+                          "offsetX": 0,
+                          "offsetY": 0,
+                          "textAlign": "center",
+                          "textBaseline": "middle"
+                        }
+                      }
+                    },
+                    "layer-tooltip": false,
+                    "location": {
+                      "mode": "auto"
+                    },
+                    "name": "Layer 2",
+                    "tooltip": true,
+                    "type": "markers"
+                  }
+                ],
+                "tooltip": {
+                  "mode": "details"
+                },
+                "view": {
+                  "allLayers": true,
+                  "dashboardVariable": false,
+                  "id": "coords",
+                  "lat": -13.926522,
+                  "lon": -48.962748,
+                  "noRepeat": false,
+                  "zoom": 3.95
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "custom": {
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    }
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      }
+    },
+    "layout": {
+      "kind": "GridLayout",
+      "spec": {
+        "items": [
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 0,
+              "y": 0,
+              "width": 12,
+              "height": 16,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-1"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 12,
+              "y": 0,
+              "width": 12,
+              "height": 16,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-2"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "links": [],
+    "liveNow": false,
+    "preload": false,
+    "tags": [],
+    "timeSettings": {
+      "timezone": "browser",
+      "from": "now-10y",
+      "to": "now",
+      "autoRefresh": "",
+      "autoRefreshIntervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
+      ],
+      "hideTimepicker": false,
+      "fiscalYearStartMonth": 0
+    },
+    "title": "Olist Geospatial Analytics",
+    "variables": [
+      {
+        "kind": "QueryVariable",
+        "spec": {
+          "name": "product_category",
+          "current": {
+            "text": "All",
+            "value": [
+              "$__all"
+            ]
+          },
+          "label": "Product Category",
+          "hide": "dontHide",
+          "refresh": "onDashboardLoad",
+          "skipUrlSync": false,
+          "query": {
+            "kind": "DataQuery",
+            "group": "postgres",
+            "version": "v0",
+            "datasource": {
+              "name": "PostgreSQL"
+            },
+            "spec": {
+              "__legacyStringValue": "SELECT DISTINCT coalesce(product_category_name_english, product_category_name, 'Unknown') FROM public.dim_products ORDER BY 1;"
+            }
+          },
+          "regex": "",
+          "regexApplyTo": "value",
+          "sort": "alphabeticalAsc",
+          "definition": "SELECT DISTINCT coalesce(product_category_name_english, product_category_name, 'Unknown') FROM public.dim_products ORDER BY 1;",
+          "options": [],
+          "multi": true,
+          "includeAll": true,
+          "allowCustomValue": true
+        }
+      },
+      {
+        "kind": "QueryVariable",
+        "spec": {
+          "name": "state",
+          "current": {
+            "text": "All",
+            "value": [
+              "$__all"
+            ]
+          },
+          "label": "State",
+          "hide": "dontHide",
+          "refresh": "onDashboardLoad",
+          "skipUrlSync": false,
+          "query": {
+            "kind": "DataQuery",
+            "group": "postgres",
+            "version": "v0",
+            "datasource": {
+              "name": "PostgreSQL"
+            },
+            "spec": {
+              "__legacyStringValue": "SELECT DISTINCT customer_state FROM public.dim_customers ORDER BY 1;"
+            }
+          },
+          "regex": "",
+          "regexApplyTo": "value",
+          "sort": "alphabeticalAsc",
+          "definition": "SELECT DISTINCT customer_state FROM public.dim_customers ORDER BY 1;",
+          "options": [],
+          "multi": true,
+          "includeAll": true,
+          "allowCustomValue": true
+        }
+      }
+    ]
+  }
+}

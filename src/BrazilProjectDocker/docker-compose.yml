@@ -1,5 +1,5 @@
 services:
-# 1. CỤM HẠ TẦNG KAFKA (HÀNG CHÍNH CHỦ APACHE - KRAFT MODE)
+
   kafka:
     image: apache/kafka:latest
     ports:
@@ -16,33 +16,44 @@ services:
       - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
       - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
 
-# 1.5 CỤM DỌN ĐƯỜNG (INIT CONTAINER) - Tự động tạo Topic rồi tự tắt
   init-kafka:
     image: apache/kafka:latest
     depends_on:
       - kafka
     command: >
       bash -c "
-      echo '⏳ Đợi Kafka khởi động 5 giây...';
+      echo '⏳ Wait for Kafka to start (5 seconds)...';
       sleep 5;
-      echo '🛠 Bắt đầu xây 4 đường ống Topic...';
+      echo '🛠️ Start creating 4 Kafka topics...';
       /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --topic live_orders --bootstrap-server kafka:9092;
       /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --topic live_items --bootstrap-server kafka:9092;
       /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --topic live_payments --bootstrap-server kafka:9092;
       /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --topic live_reviews --bootstrap-server kafka:9092;
-      echo '✅ Đã xây xong 4 Topic! Kẻ dọn đường xin phép rút lui!';
+      echo '✅ Successfully created 4 Topics!';
       "
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres_db
+    shm_size: '256mb'
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=olist
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
 
-# 2. CỤM HẠ TẦNG LƯU TRỮ HDFS
   namenode:
     image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
     environment:
       - CLUSTER_NAME=olist_cluster
-      - CORE_CONF_fs_defaultFS=hdfs://namenode:8020  # <-- THÊM DÒNG NÀY
-      - HDFS_CONF_dfs_namenode_datanode_registration_ip___hostname___check=false # <-- THÊM DÒNG NÀY ĐỂ CHỐNG LỖI IP DOCKER
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
+      - HDFS_CONF_dfs_namenode_datanode_registration_ip___hostname___check=false # <-- Prevent Docker IP lookup mismatch issues
     ports:
       - "9870:9870"
-      - "8020:8020" # Đổi 9000 thành 8020 cho chuẩn
+      - "8020:8020"
 
   datanode:
     image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
@@ -52,26 +63,97 @@ services:
       - SERVICE_PRECONDITION=namenode:9870
       - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
 
-  # 3. CỤM WEB APP
   webapp:
-    build: ./docker_webapp
+    build: ./webapp
     ports:
       - "5000:5000"
     depends_on:
       - kafka
 
-# 4. CỤM SPARK STREAMING
   spark_streaming:
-    build: ./docker_spark_streaming
+    build: ./spark
     depends_on:
       - kafka
       - namenode
-    # Dùng vòng lặp bash để gõ cửa liên tục cổng 9000. Cửa mở mới chạy Spark.
+    volumes:
+      - ./spark:/app
+      - ../../Data:/Data
     command: >
       bash -c "
-      echo '⏳ Đang chờ NameNode mở cổng 8020...';
+      echo '⏳ Waiting for NameNode port 8020...';
       while ! nc -z namenode 8020; do   
         sleep 2;
       done;
-      echo '✅ NameNode đã sẵn sàng! Bắt đầu chạy Spark...';
-      spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1 streaming_ingestion.py"
+      echo '✅ NameNode is ready! Starting Spark Streaming...';
+      spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1,org.postgresql:postgresql:42.6.0 streaming_ingestion.py"
+
+  spark_batch:
+    build: ./spark
+    depends_on:
+      - spark_streaming
+      - postgres
+      - namenode
+    volumes:
+      - ./spark:/app
+      - ../../Data:/Data
+    command: >
+      bash -c "
+      echo '⏳ Waiting for NameNode port 8020...';
+      while ! nc -z namenode 8020; do   
+        sleep 2;
+      done;
+      echo '✅ NameNode is ready! Starting HDFS to Postgres Streaming...';
+      spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1,org.postgresql:postgresql:42.6.0 /app/load_to_postgres.py"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana_dashboard
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - postgres
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana_provisioning:/etc/grafana/provisioning
+
+  producer:
+    build: 
+      context: ./kafka
+      dockerfile: Dockerfile
+    container_name: olist_producer
+    depends_on:
+      - kafka
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ../../Data:/Data
+
+  dbt:
+    build: ./dbt_project
+    container_name: olist_dbt
+    depends_on:
+      - postgres
+    environment:
+      - DBT_PROFILES_DIR=.
+    volumes:
+      - ./dbt_project:/usr/app
+    command: >
+      bash -c "
+      echo '⏳ Waiting for postgres...';
+      while ! python -c \"import socket; s = socket.socket(); s.connect(('postgres', 5432))\" 2>/dev/null; do
+        sleep 2;
+      done;
+      echo '✅ Postgres is ready! Running initial DBT models...';
+      dbt run;
+      echo '🔄 Starting periodic DBT run loop for streaming models...';
+      while true; do
+        sleep 10;
+        dbt run --select stg_orders+ stg_order_items+ stg_order_payments+ stg_order_reviews+;
+      done"
+
+volumes:
+  postgres_data:
+  grafana_data:
