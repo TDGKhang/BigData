@@ -3,80 +3,371 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sàn TMĐT Olist - Mô Phỏng Giao Dịch</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Olist Store - Big Data Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .star-rating i { cursor: pointer; color: #e5e7eb; transition: color 0.2s; }
+        .star-rating i.active, .star-rating i:hover, .star-rating i:hover ~ i { color: #fbbf24; }
+        .star-rating { display: flex; flex-direction: row-reverse; justify-content: flex-end; }
+        .tab-btn.active { border-bottom: 3px solid #3b82f6; color: #2563eb; font-weight: bold; }
+        
+        /* Toast Notification */
+        #toast { transition: opacity 0.3s, transform 0.3s; }
+    </style>
 </head>
-<body class="bg-light">
-    <div class="container mt-5 mb-5">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card shadow-lg border-0">
-                    <div class="card-header bg-dark text-white text-center py-3">
-                        <h4 class="mb-0">🛒 TẠO GIAO DỊCH OLIST MỚI</h4>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+    <header class="bg-white shadow-md sticky top-0 z-40">
+        <div class="container mx-auto px-6">
+            <div class="flex justify-between items-center py-4">
+                <div class="text-2xl font-extrabold text-blue-600 flex items-center">
+                    <i class="fas fa-store text-3xl mr-2"></i> Olist<span class="text-gray-800">Demo</span>
+                </div>
+                <div class="flex space-x-6 text-gray-600">
+                    <button onclick="switchTab('shop')" id="tab-shop" class="tab-btn active pb-1 hover:text-blue-500 transition">
+                        <i class="fas fa-shopping-bag mr-1"></i> Cửa hàng
+                    </button>
+                    <button onclick="switchTab('review')" id="tab-review" class="tab-btn pb-1 hover:text-blue-500 transition">
+                        <i class="fas fa-star-half-alt mr-1"></i> Đánh giá Đơn hàng
+                    </button>
+                </div>
+                <div class="flex space-x-4 text-gray-400">
+                    <i class="fas fa-search hover:text-blue-500 cursor-pointer text-xl"></i>
+                    <i class="fas fa-bell hover:text-blue-500 cursor-pointer text-xl"></i>
+                    <i class="fas fa-user-circle hover:text-blue-500 cursor-pointer text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div id="toast" class="fixed top-20 right-5 bg-green-500 text-white px-6 py-3 rounded shadow-lg transform translate-x-full opacity-0 z-50 flex items-center">
+        <i class="fas fa-check-circle text-2xl mr-3"></i>
+        <div>
+            <p class="font-bold">Thành công!</p>
+            <p id="toast-msg" class="text-sm">Đã xử lý yêu cầu.</p>
+        </div>
+    </div>
+
+    <main id="view-shop" class="container mx-auto px-6 py-8 block">
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 mb-10 text-white shadow-xl flex justify-between items-center">
+            <div>
+                <h2 class="text-3xl font-bold mb-2"><i class="fas fa-rocket mr-2"></i>Siêu Sale Mùa Hè</h2>
+                <p class="text-blue-100">Dữ liệu được xử lý Real-time qua Kafka & Spark Streaming</p>
+            </div>
+            <i class="fas fa-boxes text-6xl opacity-20"></i>
+        </div>
+
+        <div class="flex justify-between items-end mb-6">
+            <h3 class="text-2xl font-bold text-gray-800"><i class="fas fa-fire text-red-500 mr-2"></i>Sản phẩm thịnh hành</h3>
+            <span class="text-gray-500 text-sm"><i class="fas fa-sort-amount-down mr-1"></i>Mới nhất</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition group">
+                <div class="relative overflow-hidden h-56">
+                    <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&q=80" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                    <span class="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">HOT</span>
+                </div>
+                <div class="p-5">
+                    <p class="text-sm text-gray-400 mb-1"><i class="fas fa-headphones-alt mr-1"></i>Điện tử</p>
+                    <h4 class="text-lg font-bold mb-2">Tai nghe Bluetooth Sony</h4>
+                    <div class="flex justify-between items-center mt-4">
+                        <span class="text-2xl font-bold text-blue-600">$199.90</span>
+                        <button onclick="openCheckout('prd_1001', 'Tai nghe Bluetooth Sony', 199.90)" class="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"><i class="fas fa-cart-plus"></i></button>
                     </div>
-                    <div class="card-body p-4">
-                        <form action="/submit" method="POST">
-                            
-                            <h5 class="text-primary border-bottom pb-2">1. Thông tin Đơn hàng</h5>
-                            <div class="row mb-4">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-bold">Khách hàng (Tài khoản mẫu)</label>
-                                    <select class="form-select" name="customer_id">
-                                        <option value="9ef432eb6251297304e76186b10a928d">Khách VIP A (Hà Nội)</option>
-                                        <option value="b0830fb4747a6c6d20dea0b8c802d7ef">Khách Thường B (HCM)</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-bold">Sản phẩm</label>
-                                    <select class="form-select" name="product_id">
-                                        <option value="a9516a079e37a9c9c36b9b78b10169e8">Bàn phím cơ (Mã SP: a951...)</option>
-                                        <option value="4aa6014eceb682077f9dc4bffebc05b0">Chuột không dây (Mã SP: 4aa6...)</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-bold">Giá sản phẩm ($)</label>
-                                    <input type="number" step="0.01" class="form-control" name="price" required value="150.00">
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-bold">Phí vận chuyển ($)</label>
-                                    <input type="number" step="0.01" class="form-control" name="freight_value" required value="15.50">
-                                </div>
-                            </div>
+                </div>
+            </div>
 
-                            <h5 class="text-success border-bottom pb-2">2. Hình thức Thanh toán</h5>
-                            <div class="row mb-4">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-bold">Phương thức</label>
-                                    <select class="form-select" name="payment_type">
-                                        <option value="credit_card">Thẻ Tín dụng (Credit Card)</option>
-                                        <option value="boleto">Chuyển khoản (Boleto)</option>
-                                        <option value="voucher">Dùng Mã giảm giá (Voucher)</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-bold">Số tháng trả góp</label>
-                                    <input type="number" class="form-control" name="payment_installments" value="1" min="1" max="12">
-                                </div>
-                            </div>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition group">
+                <div class="relative overflow-hidden h-56">
+                    <img src="https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=500&q=80" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                </div>
+                <div class="p-5">
+                    <p class="text-sm text-gray-400 mb-1"><i class="fas fa-camera mr-1"></i>Nhiếp ảnh</p>
+                    <h4 class="text-lg font-bold mb-2">Máy ảnh Polaroid Retro</h4>
+                    <div class="flex justify-between items-center mt-4">
+                        <span class="text-2xl font-bold text-blue-600">$85.50</span>
+                        <button onclick="openCheckout('prd_1002', 'Máy ảnh Polaroid Retro', 85.50)" class="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"><i class="fas fa-cart-plus"></i></button>
+                    </div>
+                </div>
+            </div>
 
-                            <h5 class="text-warning border-bottom pb-2">3. Đánh giá của Khách (Mô phỏng)</h5>
-                            <div class="row mb-4">
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label fw-bold">Điểm sao (1-5)</label>
-                                    <input type="number" class="form-control" name="review_score" value="5" min="1" max="5" required>
-                                </div>
-                                <div class="col-md-8 mb-3">
-                                    <label class="form-label fw-bold">Bình luận</label>
-                                    <input type="text" class="form-control" name="review_comment" placeholder="Ví dụ: Hàng đóng gói cẩn thận!">
-                                </div>
-                            </div>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition group">
+                <div class="relative overflow-hidden h-56">
+                    <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&q=80" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                </div>
+                <div class="p-5">
+                    <p class="text-sm text-gray-400 mb-1"><i class="fas fa-shoe-prints mr-1"></i>Thời trang</p>
+                    <h4 class="text-lg font-bold mb-2">Giày Thể thao Nike Air</h4>
+                    <div class="flex justify-between items-center mt-4">
+                        <span class="text-2xl font-bold text-blue-600">$120.00</span>
+                        <button onclick="openCheckout('prd_1003', 'Giày Thể thao Nike Air', 120.00)" class="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"><i class="fas fa-cart-plus"></i></button>
+                    </div>
+                </div>
+            </div>
 
-                            <button type="submit" class="btn btn-primary w-100 fw-bold btn-lg">🚀 XÁC NHẬN ĐẶT HÀNG & BẮN DỮ LIỆU</button>
-                        </form>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition group">
+                <div class="relative overflow-hidden h-56">
+                    <img src="https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=500&q=80" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                </div>
+                <div class="p-5">
+                    <p class="text-sm text-gray-400 mb-1"><i class="far fa-clock mr-1"></i>Phụ kiện</p>
+                    <h4 class="text-lg font-bold mb-2">Đồng hồ SmartWatch</h4>
+                    <div class="flex justify-between items-center mt-4">
+                        <span class="text-2xl font-bold text-blue-600">$250.00</span>
+                        <button onclick="openCheckout('prd_1004', 'Đồng hồ SmartWatch', 250.00)" class="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"><i class="fas fa-cart-plus"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition group">
+                <div class="relative overflow-hidden h-56">
+                    <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&q=80" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                </div>
+                <div class="p-5">
+                    <p class="text-sm text-gray-400 mb-1"><i class="fas fa-backpack mr-1"></i>Hành trang</p>
+                    <h4 class="text-lg font-bold mb-2">Balo Laptop Chống Nước</h4>
+                    <div class="flex justify-between items-center mt-4">
+                        <span class="text-2xl font-bold text-blue-600">$45.90</span>
+                        <button onclick="openCheckout('prd_1005', 'Balo Laptop Chống Nước', 45.90)" class="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"><i class="fas fa-cart-plus"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition group">
+                <div class="relative overflow-hidden h-56">
+                    <img src="https://images.unsplash.com/photo-1595225476474-87563907a212?w=500&q=80" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                </div>
+                <div class="p-5">
+                    <p class="text-sm text-gray-400 mb-1"><i class="fas fa-keyboard mr-1"></i>Gaming</p>
+                    <h4 class="text-lg font-bold mb-2">Bàn phím cơ RGB</h4>
+                    <div class="flex justify-between items-center mt-4">
+                        <span class="text-2xl font-bold text-blue-600">$89.00</span>
+                        <button onclick="openCheckout('prd_1006', 'Bàn phím cơ RGB', 89.00)" class="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"><i class="fas fa-cart-plus"></i></button>
                     </div>
                 </div>
             </div>
         </div>
+    </main>
+
+    <main id="view-review" class="container mx-auto px-6 py-12 hidden">
+        <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="bg-blue-50 p-8 text-center border-b border-blue-100">
+                <i class="fas fa-comments text-5xl text-blue-500 mb-4"></i>
+                <h2 class="text-2xl font-bold text-gray-800">Đánh giá sản phẩm đã mua</h2>
+                <p class="text-gray-500 text-sm mt-2">Dữ liệu đánh giá sẽ được đẩy Real-time vào Kafka Topic: <code>live_reviews</code></p>
+            </div>
+            
+            <div class="p-8">
+                <form id="reviewForm">
+                    <div class="mb-5">
+                        <label class="block text-gray-700 text-sm font-bold mb-2"><i class="fas fa-hashtag text-gray-400 mr-1"></i>Mã đơn hàng (Order ID)</label>
+                        <input type="text" id="reviewOrderId" placeholder="Nhập mã đơn hàng của bạn..." class="w-full border-2 border-gray-200 rounded-lg px-4 py-3 outline-none focus:border-blue-500 transition font-mono text-sm">
+                        <p class="text-xs text-gray-400 mt-1">* Mã đơn hàng sẽ tự động điền nếu bạn vừa mua hàng thành công.</p>
+                    </div>
+
+                    <div class="mb-6 text-center">
+                        <label class="block text-gray-700 text-sm font-bold mb-3">Chất lượng sản phẩm</label>
+                        <div class="star-rating text-4xl inline-flex" id="starRating">
+                            <i class="fas fa-star" data-val="5"></i>
+                            <i class="fas fa-star" data-val="4"></i>
+                            <i class="fas fa-star" data-val="3"></i>
+                            <i class="fas fa-star" data-val="2"></i>
+                            <i class="fas fa-star active" data-val="1"></i>
+                        </div>
+                        <input type="hidden" id="reviewScore" value="5">
+                    </div>
+
+                    <div class="mb-8">
+                        <label class="block text-gray-700 text-sm font-bold mb-2"><i class="fas fa-pen text-gray-400 mr-1"></i>Nhận xét chi tiết</label>
+                        <textarea id="reviewComment" rows="4" placeholder="Hãy chia sẻ những điều bạn thích về sản phẩm này nhé..." class="w-full border-2 border-gray-200 rounded-lg px-4 py-3 outline-none focus:border-blue-500 transition"></textarea>
+                    </div>
+                    
+                    <button type="button" onclick="submitReview()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 px-4 rounded-xl shadow-lg transform transition hover:-translate-y-1">
+                        <i class="fas fa-paper-plane mr-2"></i> Gửi Đánh Giá Ngay
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <div id="checkoutModal" class="fixed inset-0 bg-black bg-opacity-60 hidden flex items-center justify-center z-50 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden transform transition-all">
+            <div class="bg-gray-900 px-6 py-4 flex justify-between items-center text-white">
+                <h3 class="font-bold text-lg"><i class="fas fa-credit-card mr-2 text-blue-400"></i>Thanh toán</h3>
+                <button onclick="closeModal('checkoutModal')" class="text-gray-400 hover:text-white transition"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-6">
+                <div class="mb-5 flex items-center bg-blue-50 p-4 rounded-xl border border-blue-100">
+                    <div class="bg-blue-200 p-3 rounded-lg mr-4">
+                        <i class="fas fa-box-open text-blue-700 text-xl"></i>
+                    </div>
+                    <div>
+                        <p id="checkoutItemName" class="font-bold text-gray-800"></p>
+                        <p id="checkoutItemPrice" class="text-blue-600 font-bold text-lg"></p>
+                    </div>
+                </div>
+                
+                <form id="checkoutForm">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Phương thức thanh toán</label>
+                        <div class="relative">
+                            <select id="paymentType" class="w-full border-2 border-gray-200 rounded-lg pl-10 pr-4 py-3 appearance-none outline-none focus:border-blue-500 font-medium text-gray-700">
+                                <option value="credit_card">Thẻ Tín Dụng / Ghi Nợ</option>
+                                <option value="boleto">Tiền mặt (Boleto)</option>
+                                <option value="voucher">Voucher Giảm Giá</option>
+                            </select>
+                            <i class="fas fa-wallet absolute left-4 top-4 text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div class="mb-8">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Số tháng trả góp</label>
+                        <div class="relative">
+                            <input type="number" id="installments" min="1" max="12" value="1" class="w-full border-2 border-gray-200 rounded-lg pl-10 pr-4 py-3 outline-none focus:border-blue-500 font-medium text-gray-700">
+                            <i class="fas fa-calendar-alt absolute left-4 top-4 text-gray-400"></i>
+                        </div>
+                    </div>
+                    <button type="button" onclick="submitCheckout()" class="w-full bg-gray-900 hover:bg-black text-white font-bold py-4 px-4 rounded-xl shadow-lg transition">
+                        <i class="fas fa-lock mr-2"></i> Xác Nhận Thanh Toán
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
+
+    <script>
+        let currentProduct = {};
+
+        // Xử lý chuyển Tab
+        function switchTab(tabName) {
+            // Đổi màu menu
+            document.getElementById('tab-shop').classList.remove('active');
+            document.getElementById('tab-review').classList.remove('active');
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+
+            // Đổi nội dung
+            document.getElementById('view-shop').classList.add('hidden');
+            document.getElementById('view-review').classList.add('hidden');
+            document.getElementById(`view-${tabName}`).classList.remove('hidden');
+            document.getElementById(`view-${tabName}`).classList.add('block');
+        }
+
+        // Xử lý Rating Sao
+        const stars = document.querySelectorAll('#starRating i');
+        const scoreInput = document.getElementById('reviewScore');
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                stars.forEach(s => s.classList.remove('active'));
+                this.classList.add('active');
+                scoreInput.value = this.getAttribute('data-val');
+            });
+        });
+
+        // Mở/Đóng Modal
+        function openCheckout(id, name, price) {
+            currentProduct = { id, name, price };
+            document.getElementById('checkoutItemName').innerText = name;
+            document.getElementById('checkoutItemPrice').innerText = "$" + price.toFixed(2);
+            document.getElementById('checkoutModal').classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        // Hiển thị thông báo (Toast)
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = message;
+            toast.classList.remove('translate-x-full', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-x-full', 'opacity-0');
+            }, 3000);
+        }
+
+        // Gửi Đơn Hàng (API)
+        async function submitCheckout() {
+            const paymentType = document.getElementById('paymentType').value;
+            const installments = document.getElementById('installments').value;
+            const btn = document.querySelector('#checkoutForm button');
+            
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        product_id: currentProduct.id,
+                        price: currentProduct.price,
+                        payment_type: paymentType,
+                        payment_installments: parseInt(installments)
+                    })
+                });
+                
+                const data = await response.json();
+                if(data.status === 'success') {
+                    closeModal('checkoutModal');
+                    showToast(`Đặt hàng thành công! Tổng: $${data.total}`);
+                    
+                    // Điền sẵn Order ID vào Tab Review để làm màu Demo
+                    document.getElementById('reviewOrderId').value = data.order_id;
+                    
+                    // Nếu muốn hệ thống xịn hơn, có thể tự động chuyển sang tab Review sau 2 giây
+                    // setTimeout(() => switchTab('review'), 2000);
+                }
+            } catch (err) {
+                alert("Có lỗi xảy ra, vui lòng thử lại!");
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // Gửi Đánh Giá (API)
+        async function submitReview() {
+            const orderId = document.getElementById('reviewOrderId').value;
+            const comment = document.getElementById('reviewComment').value;
+            const score = document.getElementById('reviewScore').value;
+            
+            if(!orderId) {
+                alert("Vui lòng nhập mã đơn hàng (Order ID) để đánh giá!");
+                return;
+            }
+
+            const btn = document.querySelector('#reviewForm button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Đang gửi lên Kafka...';
+            btn.disabled = true;
+
+            try {
+                await fetch('/api/review', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        order_id: orderId,
+                        review_score: parseInt(score),
+                        review_comment_message: comment
+                    })
+                });
+                
+                // Reset form
+                document.getElementById('reviewComment').value = '';
+                document.getElementById('reviewOrderId').value = ''; // Xóa order ID sau khi gửi xong
+                showToast("Đã gửi đánh giá thành công!");
+                
+                // Trở về tab mua sắm sau 2s
+                setTimeout(() => switchTab('shop'), 2000);
+            } catch (err) {
+                alert("Lỗi khi gửi đánh giá!");
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+    </script>
 </body>
 </html>
