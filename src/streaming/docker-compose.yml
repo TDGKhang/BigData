@@ -146,7 +146,24 @@ services:
       while ! python -c \"import socket; s = socket.socket(); s.connect(('postgres', 5432))\" 2>/dev/null; do
         sleep 2;
       done;
-      echo '✅ Postgres is ready! Running initial DBT models...';
+      echo '⏳ Waiting for Spark Batch to load raw tables into Postgres...';
+      python -c \"
+      import psycopg2, time
+      while True:
+          try:
+              conn = psycopg2.connect(host='postgres', database='olist', user='postgres', password='postgres')
+              cur = conn.cursor()
+              cur.execute(\\\"SELECT 1 FROM information_schema.tables WHERE table_schema = 'raw' AND table_name = 'customers';\\\")
+              res = cur.fetchone()
+              cur.close()
+              conn.close()
+              if res:
+                  break
+          except Exception:
+              pass
+          time.sleep(3)
+      \";
+      echo '✅ Raw tables are loaded! Running initial DBT models...';
       dbt run;
       echo '🔄 Starting periodic DBT run loop for streaming models...';
       while true; do

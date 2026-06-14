@@ -67,7 +67,7 @@
                         "editorMode": "code",
                         "format": "table",
                         "rawQuery": true,
-                        "rawSql": "SELECT \n    c.customer_state as state,\n    AVG(g.geolocation_lat) as latitude,\n    AVG(g.geolocation_lng) as longitude,\n    COUNT(DISTINCT c.customer_unique_id) as metric\nFROM public.dim_customers c\nJOIN public.dim_geolocation g ON c.customer_zip_code_prefix = g.geolocation_zip_code_prefix\nLEFT JOIN public.fact_order_items f ON f.customer_id = c.customer_id\nLEFT JOIN public.dim_products p ON f.product_id = p.product_id\nWHERE \n    ('All' IN (${product_category:sqlstring}) OR coalesce(p.product_category_name_english, p.product_category_name, 'Unknown') IN (${product_category:sqlstring}))\n    AND ('All' IN (${state:sqlstring}) OR c.customer_state IN (${state:sqlstring}))\nGROUP BY c.customer_state;",
+                        "rawSql": "SELECT \n    c.customer_state as state,\n    AVG(g.geolocation_lat) as latitude,\n    AVG(g.geolocation_lng) as longitude,\n    COUNT(DISTINCT c.customer_unique_id) as metric\nFROM public.dim_customers c\nJOIN public.dim_geolocation g ON c.customer_zip_code_prefix = g.geolocation_zip_code_prefix\nLEFT JOIN public.fact_order_items f ON f.customer_id = c.customer_id\nLEFT JOIN public.dim_products p ON f.product_id = p.product_id\nWHERE \n    ('All' IN (${product_category}) OR coalesce(p.product_category_name_english, p.product_category_name, 'Unknown') IN (${product_category}))\n    AND ('All' IN (${state}) OR c.customer_state IN (${state}))\nGROUP BY c.customer_state;",
                         "sql": {
                           "columns": [
                             {
@@ -249,7 +249,7 @@
                         "editorMode": "code",
                         "format": "table",
                         "rawQuery": true,
-                        "rawSql": "SELECT \n    c.customer_state as state,\n    AVG(g.geolocation_lat) as latitude,\n    AVG(g.geolocation_lng) as longitude,\n    SUM(f.price) as metric\nFROM public.fact_order_items f\nJOIN public.dim_customers c ON f.customer_id = c.customer_id\nJOIN public.dim_geolocation g ON c.customer_zip_code_prefix = g.geolocation_zip_code_prefix\nJOIN public.dim_products p ON f.product_id = p.product_id\nWHERE \n    ('All' IN (${product_category:sqlstring}) OR coalesce(p.product_category_name_english, p.product_category_name, 'Unknown') IN (${product_category:sqlstring}))\n    AND ('All' IN (${state:sqlstring}) OR c.customer_state IN (${state:sqlstring}))\nGROUP BY c.customer_state;"
+                        "rawSql": "SELECT \n    c.customer_state as state,\n    AVG(g.geolocation_lat) as latitude,\n    AVG(g.geolocation_lng) as longitude,\n    SUM(f.price) as metric\nFROM public.fact_order_items f\nJOIN public.dim_customers c ON f.customer_id = c.customer_id\nJOIN public.dim_geolocation g ON c.customer_zip_code_prefix = g.geolocation_zip_code_prefix\nJOIN public.dim_products p ON f.product_id = p.product_id\nWHERE \n    ('All' IN (${product_category}) OR coalesce(p.product_category_name_english, p.product_category_name, 'Unknown') IN (${product_category}))\n    AND ('All' IN (${state}) OR c.customer_state IN (${state}))\nGROUP BY c.customer_state;"
                       }
                     },
                     "refId": "A",

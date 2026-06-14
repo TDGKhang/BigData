@@ -1,6 +1,9 @@
 # dbt
-dbt_project/logs/
-dbt_project/target/
+**/dbt_project/logs/
+**/dbt_project/target/
+**/logs/
+**/target/
+
 
 # Grafana
 grafana.db
