@@ -1425,7 +1425,7 @@
                         "editorMode": "code",
                         "format": "time_series",
                         "rawQuery": true,
-                        "rawSql": "SELECT \r\n    date_trunc('second', inserted_at::timestamp) AS time, \r\n    COUNT(*) AS \"Orders/sec\" \r\nFROM raw.orders \r\nWHERE inserted_at::timestamp >= NOW() - INTERVAL '5 minutes' \r\nGROUP BY 1 \r\nORDER BY 1;\r\n",
+                        "rawSql": "SELECT \r\n    date_trunc('second', order_purchase_timestamp::timestamp) AS time, \r\n    COUNT(*) AS \"Orders/sec\" \r\nFROM raw.orders \r\nWHERE order_purchase_timestamp::timestamp >= NOW() - INTERVAL '5 minutes' \r\nGROUP BY 1 \r\nORDER BY 1;\r\n",
                         "sql": {
                           "columns": [
                             {
