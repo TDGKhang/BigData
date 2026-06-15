@@ -6,22 +6,26 @@
 
 ```
 Nhom_04/
-├── README.md
+├── README.md              # Hướng dẫn chạy code, tổng quan dự án
 ├── docs/                  # Báo cáo Word, Slide thuyết trình
-├── images/                # Ảnh minh chứng (config, kết quả query, mô hình)
+├── images/                # Ảnh minh chứng 
+├── data/                  # Dữ liệu mẫu (raw/processed data)
 └── src/
-    ├── 01_setup/          # File cấu hình Hadoop, Spark
-    ├── 02_data_ingestion/ # Đưa dataset vào HDFS
-    ├── 03_eda/            # Khám phá dữ liệu
-    ├── 04_spark_sql/      # 10+ câu Spark SQL
-    └── 05_mllib/          # 3 mô hình MLlib
-        ├── late_delivery_prediction.ipynb     (Phân lớp - GBT)
-        ├── freight_value_prediction.ipynb     (Hồi quy - Random Forest)
-        └── customer_clustering.ipynb          (Phân cụm - KMeans RFM)
-```
+    ├── eda/               # Khám phá và tiền xử lý dữ liệu ngắt quãng (Batch)
+    │   └── eda.ipynb
+    │
+    ├── spark_sql/         # Các câu truy vấn Spark SQL (10+ câu)
+    │   └── queries.ipynb
+    │
+    ├── mllib/             # Xây dựng và đánh giá 3 mô hình MLlib
+    │   ├── late_delivery_prediction.ipynb   # Phân lớp - GBT Classifier
+    │   ├── freight_value_prediction.ipynb  # Hồi quy - Random Forest Regressor
+    │   └── customer_clustering.ipynb       # Phân cụm - KMeans RFM
+    │
+    └── streaming/        
 
 
-## Hướng dẫn khởi chạy
+## Hướng dẫn chạy
 ---
 ### Bước 1: Chuẩn bị môi trường
 1. Đảm bảo bạn đã cài đặt và đang bật **Docker Desktop** trên máy tính.
