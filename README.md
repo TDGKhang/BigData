@@ -6,22 +6,26 @@
 
 ```
 Nhom_04/
-├── README.md
+├── README.md              # Hướng dẫn chạy code, tổng quan dự án
 ├── docs/                  # Báo cáo Word, Slide thuyết trình
-├── images/                # Ảnh minh chứng (config, kết quả query, mô hình)
+├── images/                # Ảnh minh chứng 
+├── data/                  # Dữ liệu mẫu (raw/processed data)
 └── src/
-    ├── 01_setup/          # File cấu hình Hadoop, Spark
-    ├── 02_data_ingestion/ # Đưa dataset vào HDFS
-    ├── 03_eda/            # Khám phá dữ liệu
-    ├── 04_spark_sql/      # 10+ câu Spark SQL
-    └── 05_mllib/          # 3 mô hình MLlib
-        ├── late_delivery_prediction.ipynb     (Phân lớp - GBT)
-        ├── freight_value_prediction.ipynb     (Hồi quy - Random Forest)
-        └── customer_clustering.ipynb          (Phân cụm - KMeans RFM)
+    ├── eda/               # Khám phá và tiền xử lý dữ liệu ngắt quãng (Batch)
+    │   └── eda.ipynb
+    │
+    ├── spark_sql/         # Các câu truy vấn Spark SQL (10+ câu)
+    │   └── queries.ipynb
+    │
+    ├── mllib/             # Xây dựng và đánh giá 3 mô hình MLlib
+    │   ├── late_delivery_prediction.ipynb   # Phân lớp - GBT Classifier
+    │   ├── freight_value_prediction.ipynb  # Hồi quy - Random Forest Regressor
+    │   └── customer_clustering.ipynb       # Phân cụm - KMeans RFM
+    │
+    └── streaming/        
 ```
 
-
-## Hướng dẫn khởi chạy
+## Hướng dẫn chạy
 ---
 ### Bước 1: Chuẩn bị môi trường
 1. Đảm bảo bạn đã cài đặt và đang bật **Docker Desktop** trên máy tính.
@@ -59,6 +63,8 @@ docker compose logs -f dbt
 ## Địa Chỉ Truy Cập Các Dịch Vụ (Web UI)
 
 ### Bước 4: Sử dụng và kiểm tra các dịch vụ
+Hệ thống dùng Ngrok để tạo một đường link Public giúp nhận Webhook từ Shopify về Localhost. Tuy nhiên, mỗi lần chạy Ngrok trên một máy tính khác, đường link này sẽ thay đổi ngẫu nhiên. Nếu dùng hệ thống thật, người dùng sẽ phải đăng nhập vào tài khoản Admin Shopify để cấu hình lại link mới rất mất thời gian. Do đó, nhóm sẽ tạm biến localhost:5000 thành một UI giả.
+
 **Giả lập giao dịch:** Truy cập trình duyệt tại địa chỉ [http://localhost:5000](http://localhost:5000) để nhập đơn hàng giả lập qua giao diện Flask Web App. Khi submit, Flask sẽ gửi dữ liệu vào Kafka.
 **Hadoop HDFS Web UI:** Truy cập [http://localhost:9870](http://localhost:9870) để theo dõi hệ thống tệp tin phân tán và các thư mục Parquet được Spark ghi xuống.
 **Theo dõi và phân tích:** Truy cập Grafana tại [http://localhost:3000](http://localhost:3000) để xem các dashboard báo cáo thời gian thực.
