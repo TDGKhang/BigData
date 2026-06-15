@@ -32,7 +32,7 @@ Nhom_04/
 | Thành viên | MSSV | Công việc phụ trách |
 |---|---|---|
 | Phan Anh Tài | ... | Viết Spark SQL, thiết kế pipeline và dashboard streaming |
-| Đỗ Thái Gia Hy | ... |  Thiết kế, cấu hình Kafka và Web UI  |
+| Đỗ Thái Gia Hy | 31231021575 |  Thiết kế, cấu hình Kafka và Web UI  |
 | Trương Đoàn Gia Khang | ... | Cài đặt Hadoop/HDFS, Cài đặt Spark, mô hình Hồi quy chi phí vận chuyển |
 | Lê Thủy Tiên | 31231020076 | Mô hình Phân cụm khách hàng (K-Means RFM), mô hình Phân lớp giao trễ (GBT)|
 | (Tất cả) | | Tổng hợp báo cáo Word, làm slide thuyết trình, chuẩn bị Q&A |
