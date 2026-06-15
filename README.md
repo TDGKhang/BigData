@@ -63,6 +63,7 @@ docker compose logs -f dbt
 ## Địa Chỉ Truy Cập Các Dịch Vụ (Web UI)
 
 ### Bước 4: Sử dụng và kiểm tra các dịch vụ
+Hệ thống dùng Ngrok để tạo một đường link Public giúp nhận Webhook từ Shopify về Localhost. Tuy nhiên, mỗi lần chạy Ngrok trên một máy tính khác, đường link này sẽ thay đổi ngẫu nhiên. Nếu dùng hệ thống thật, người dùng sẽ phải đăng nhập vào tài khoản Admin Shopify để cấu hình lại link mới rất mất thời gian. Do đó, nhóm sẽ tạm biến localhost:5000 thành một UI giả.
 **Giả lập giao dịch:** Truy cập trình duyệt tại địa chỉ [http://localhost:5000](http://localhost:5000) để nhập đơn hàng giả lập qua giao diện Flask Web App. Khi submit, Flask sẽ gửi dữ liệu vào Kafka.
 **Hadoop HDFS Web UI:** Truy cập [http://localhost:9870](http://localhost:9870) để theo dõi hệ thống tệp tin phân tán và các thư mục Parquet được Spark ghi xuống.
 **Theo dõi và phân tích:** Truy cập Grafana tại [http://localhost:3000](http://localhost:3000) để xem các dashboard báo cáo thời gian thực.
